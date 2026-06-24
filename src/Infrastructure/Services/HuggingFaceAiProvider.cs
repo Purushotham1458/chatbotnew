@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Application.Interfaces;
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Services;
@@ -8,18 +10,26 @@ namespace Infrastructure.Services;
 public class HuggingFaceAiProvider : IAiProvider
 {
     private readonly HttpClient _http;
-    private readonly string _apiKey;
+    private readonly AppDbContext _db;
     private readonly string _model;
 
-    public HuggingFaceAiProvider(HttpClient http, IConfiguration config)
+    public HuggingFaceAiProvider(HttpClient http, AppDbContext db, IConfiguration config)
     {
         _http = http;
-        _apiKey = config["HuggingFace:ApiKey"]!;
+        _db = db;
         _model = config["HuggingFace:Model"] ?? "meta-llama/Llama-3.1-8B-Instruct";
     }
 
     public async Task<string> GetResponseAsync(string message, string? context = null)
     {
+        var apiKey = await _db.AppSettings
+            .Where(a => a.Key == "HuggingFace:ApiKey")
+            .Select(a => a.Value)
+            .FirstOrDefaultAsync();
+
+        if (string.IsNullOrEmpty(apiKey))
+            return "AI service not configured. Please add HuggingFace API key in AppSettings table.";
+
         var url = "https://router.huggingface.co/v1/chat/completions";
 
         var messages = new List<object>();
@@ -35,7 +45,7 @@ public class HuggingFaceAiProvider : IAiProvider
         messages.Add(new { role = "user", content = message });
 
         var request = new HttpRequestMessage(HttpMethod.Post, url);
-        request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+        request.Headers.Add("Authorization", $"Bearer {apiKey}");
         request.Content = JsonContent.Create(new
         {
             model = _model,
