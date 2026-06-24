@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+
+## IDE
+.vs/
+.vscode/
+*.swp
+
+## OS
+Thumbs.db
+.DS_Store
+
+## Publish
+publish/
+
+## Secrets
+appsettings.Development.json
+output.log
