@@ -36,16 +36,16 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<AuditMiddleware>();
-app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.MapControllers();
 app.Run();

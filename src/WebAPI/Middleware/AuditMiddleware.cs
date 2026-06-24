@@ -14,6 +14,12 @@ public class AuditMiddleware
 
     public async Task InvokeAsync(HttpContext context, AppDbContext db)
     {
+        if (!context.Request.Path.StartsWithSegments("/api"))
+        {
+            await _next(context);
+            return;
+        }
+
         var sw = Stopwatch.StartNew();
         var requestBody = await ReadRequestBody(context.Request);
 
