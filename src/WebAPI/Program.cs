@@ -48,4 +48,5 @@ app.UseAuthorization();
 app.UseMiddleware<AuditMiddleware>();
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 app.Run();
